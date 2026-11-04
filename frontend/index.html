@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinSaathi — Digital Financial Literacy AI Agent</title>
+  <style>
+    /* ── Reset & Base ──────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ibm-blue:   #0f62fe;
+      --ibm-dark:   #161616;
+      --ibm-gray:   #393939;
+      --ibm-mid:    #6f6f6f;
+      --ibm-light:  #f4f4f4;
+      --ibm-border: #e0e0e0;
+      --ibm-white:  #ffffff;
+      --ibm-teal:   #009d9a;
+      --ibm-green:  #198038;
+      --ibm-yellow: #f1c21b;
+      --ibm-red:    #da1e28;
+      --radius:     8px;
+      --shadow:     0 2px 8px rgba(0,0,0,0.12);
+    }
+    html, body { height: 100%; font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif; background: var(--ibm-light); color: var(--ibm-dark); }
+    a { color: var(--ibm-blue); }
+
+    /* ── Layout ────────────────────────────────────── */
+    .app-layout { display: flex; flex-direction: column; height: 100vh; max-width: 1200px; margin: 0 auto; }
+
+    /* ── Header ────────────────────────────────────── */
+    .header {
+      background: var(--ibm-dark);
+      color: var(--ibm-white);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .header-brand { display: flex; align-items: center; gap: 12px; }
+    .header-logo { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: var(--ibm-white); }
+    .header-logo span { color: #78a9ff; }
+    .header-tagline { font-size: 12px; color: #a8a8a8; }
+    .header-badge {
+      background: var(--ibm-blue);
+      color: white;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Main body: sidebar + chat ─────────────────── */
+    .main-body { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Sidebar ────────────────────────────────────── */
+    .sidebar {
+      width: 268px;
+      flex-shrink: 0;
+      background: var(--ibm-white);
+      border-right: 1px solid var(--ibm-border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .sidebar-section { padding: 16px; border-bottom: 1px solid var(--ibm-border); }
+    .sidebar-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--ibm-mid); margin-bottom: 10px; font-weight: 600; }
+    .topic-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 9px 12px;
+      margin-bottom: 4px;
+      border: 1px solid var(--ibm-border);
+      border-radius: var(--radius);
+      background: var(--ibm-light);
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      color: var(--ibm-dark);
+    }
+    .topic-btn:hover { background: #e8efff; border-color: var(--ibm-blue); color: var(--ibm-blue); }
+
+    /* Language selector */
+    .lang-select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--ibm-border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      background: var(--ibm-white);
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    /* Category filter */
+    .cat-select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--ibm-border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      background: var(--ibm-white);
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    /* Clear chat button */
+    .clear-btn {
+      width: 100%;
+      padding: 9px;
+      background: transparent;
+      border: 1px solid var(--ibm-border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--ibm-mid);
+      margin-top: 8px;
+      transition: background 0.15s;
+    }
+    .clear-btn:hover { background: #fff1f1; border-color: var(--ibm-red); color: var(--ibm-red); }
+
+    /* Source info in sidebar */
+    .source-list { margin-top: 6px; }
+    .source-item {
+      font-size: 12px;
+      color: var(--ibm-mid);
+      padding: 5px 8px;
+      border-left: 3px solid var(--ibm-blue);
+      margin-bottom: 6px;
+      background: var(--ibm-light);
+      border-radius: 0 4px 4px 0;
+    }
+    .source-item strong { color: var(--ibm-dark); display: block; font-size: 12px; }
+
+    /* ── Chat panel ─────────────────────────────────── */
+    .chat-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #f8f9fc;
+    }
+
+    /* Messages area */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Welcome message */
+    .welcome-card {
+      background: var(--ibm-white);
+      border: 1px solid var(--ibm-border);
+      border-radius: var(--radius);
+      padding: 28px;
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .welcome-card h2 { font-size: 22px; font-weight: 700; color: var(--ibm-dark); margin-bottom: 8px; }
+    .welcome-card p { font-size: 14px; color: var(--ibm-mid); line-height: 1.6; }
+    .welcome-icon { font-size: 48px; margin-bottom: 12px; }
+    .welcome-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
+    .welcome-chip {
+      padding: 6px 14px;
+      border: 1px solid var(--ibm-blue);
+      color: var(--ibm-blue);
+      border-radius: 16px;
+      font-size: 12px;
+      cursor: pointer;
+      background: transparent;
+      transition: background 0.15s;
+    }
+    .welcome-chip:hover { background: #e8efff; }
+
+    /* Chat bubbles */
+    .message-row { display: flex; gap: 10px; align-items: flex-start; }
+    .message-row.user { flex-direction: row-reverse; }
+
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .avatar.bot { background: var(--ibm-blue); color: white; }
+    .avatar.user { background: var(--ibm-teal); color: white; }
+
+    .bubble {
+      max-width: 72%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+      position: relative;
+    }
+    .bubble.bot {
+      background: var(--ibm-white);
+      border: 1px solid var(--ibm-border);
+      border-top-left-radius: 2px;
+      box-shadow: var(--shadow);
+    }
+    .bubble.user {
+      background: var(--ibm-blue);
+      color: white;
+      border-top-right-radius: 2px;
+    }
+    .bubble.error { background: #fff1f1; border-color: #ffc0c0; color: var(--ibm-red); }
+    .bubble .lang-tag {
+      font-size: 10px;
+      color: #a8a8a8;
+      margin-top: 6px;
+    }
+
+    /* Loading dots */
+    .loading-dots span {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--ibm-blue);
+      margin: 0 2px;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-6px); opacity: 1; }
+    }
+
+    /* ── Input bar ──────────────────────────────────── */
+    .input-bar {
+      padding: 16px 28px;
+      background: var(--ibm-white);
+      border-top: 1px solid var(--ibm-border);
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .input-wrap { flex: 1; position: relative; }
+    textarea#userInput {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--ibm-border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      resize: none;
+      font-family: inherit;
+      line-height: 1.5;
+      max-height: 140px;
+      overflow-y: auto;
+      transition: border-color 0.2s;
+      background: var(--ibm-light);
+    }
+    textarea#userInput:focus { outline: none; border-color: var(--ibm-blue); background: white; }
+    .char-count { font-size: 11px; color: var(--ibm-mid); text-align: right; margin-top: 4px; }
+
+    .send-btn {
+      padding: 12px 22px;
+      background: var(--ibm-blue);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+      height: 48px;
+    }
+    .send-btn:hover { background: #0353e9; }
+    .send-btn:disabled { background: #a8c8ff; cursor: not-allowed; }
+
+    /* ── Scrollbar ──────────────────────────────────── */
+    .messages::-webkit-scrollbar { width: 6px; }
+    .messages::-webkit-scrollbar-track { background: transparent; }
+    .messages::-webkit-scrollbar-thumb { background: #c0c0c0; border-radius: 3px; }
+
+    /* ── Footer ─────────────────────────────────────── */
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--ibm-mid);
+      padding: 8px;
+      background: var(--ibm-dark);
+      color: #8d8d8d;
+      flex-shrink: 0;
+    }
+    .footer a { color: #78a9ff; }
+
+    /* ── Responsive ─────────────────────────────────── */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .messages { padding: 16px; }
+      .input-bar { padding: 12px 16px; }
+      .bubble { max-width: 90%; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-brand">
+      <div>
+        <div class="header-logo">Fin<span>Saathi</span> 🤝</div>
+        <div class="header-tagline">Digital Financial Literacy AI Agent</div>
+      </div>
+    </div>
+    <div class="header-badge">IBM Granite · watsonx.ai</div>
+  </header>
+
+  <!-- Main Body -->
+  <div class="main-body">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <!-- Quick Topics -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">Quick Topics</div>
+        <div id="topicButtons">
+          <div style="font-size:12px;color:#a8a8a8">Loading topics…</div>
+        </div>
+      </div>
+
+      <!-- Language -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">Response Language</div>
+        <select class="lang-select" id="langSelect">
+          <option value="">Auto-detect</option>
+          <option value="en">English</option>
+          <option value="hi">Hindi (हिन्दी)</option>
+          <option value="ta">Tamil (தமிழ்)</option>
+          <option value="te">Telugu (తెలుగు)</option>
+          <option value="bn">Bengali (বাংলা)</option>
+          <option value="mr">Marathi (मराठी)</option>
+          <option value="gu">Gujarati (ગુજરાતી)</option>
+          <option value="kn">Kannada (ಕನ್ನಡ)</option>
+          <option value="ml">Malayalam (മലയാളം)</option>
+          <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+          <option value="ur">Urdu (اردو)</option>
+        </select>
+      </div>
+
+      <!-- Category Filter -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">Filter by Topic</div>
+        <select class="cat-select" id="catSelect">
+          <option value="">All Topics</option>
+          <option value="upi">UPI & Payments</option>
+          <option value="scam_prevention">Scam Prevention</option>
+          <option value="interest_rates">Interest Rates</option>
+          <option value="budgeting">Budgeting</option>
+          <option value="personal_finance">Personal Finance</option>
+          <option value="government_schemes">Govt Schemes</option>
+        </select>
+      </div>
+
+      <!-- Last sources -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">📚 Last Sources Used</div>
+        <div id="sourceList" class="source-list">
+          <div style="font-size:12px;color:#a8a8a8">Sources will appear after your first question.</div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="sidebar-section">
+        <button class="clear-btn" onclick="clearChat()">🗑 Clear Conversation</button>
+      </div>
+
+      <!-- Emergency -->
+      <div class="sidebar-section" style="background:#fff9f0;border:1px solid #ffd;border-radius:8px;margin:12px;padding:12px;">
+        <div class="sidebar-title" style="color:#b5460e">⚠ Fraud / Emergency</div>
+        <div style="font-size:12px;line-height:1.7;color:#555">
+          <strong>Cyber Crime Helpline:</strong><br>
+          📞 <a href="tel:1930">1930</a><br>
+          🌐 <a href="https://cybercrime.gov.in" target="_blank">cybercrime.gov.in</a><br>
+          <strong>RBI Complaints:</strong><br>
+          🌐 <a href="https://cms.rbi.org.in" target="_blank">cms.rbi.org.in</a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel">
+      <div class="messages" id="messages">
+        <!-- Welcome card shown initially -->
+        <div class="welcome-card" id="welcomeCard">
+          <div class="welcome-icon">🤝</div>
+          <h2>Namaste! I'm FinSaathi</h2>
+          <p>Your AI-powered Digital Financial Literacy assistant, powered by <strong>IBM Granite</strong>.<br>
+          Ask me anything about UPI payments, avoiding scams, interest rates, budgeting, and more.</p>
+          <div class="welcome-chips">
+            <button class="welcome-chip" onclick="askQuickQuestion('How do I send money via UPI?')">Send money via UPI</button>
+            <button class="welcome-chip" onclick="askQuickQuestion('What are common UPI scams?')">Avoid UPI scams</button>
+            <button class="welcome-chip" onclick="askQuickQuestion('What is a safe interest rate for a loan?')">Safe interest rates</button>
+            <button class="welcome-chip" onclick="askQuickQuestion('How do I make a monthly budget?')">Create a budget</button>
+            <button class="welcome-chip" onclick="askQuickQuestion('How can I improve my CIBIL score?')">Improve CIBIL score</button>
+            <button class="welcome-chip" onclick="askQuickQuestion('What government schemes can help me financially?')">Govt schemes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input bar -->
+      <div class="input-bar">
+        <div class="input-wrap">
+          <textarea
+            id="userInput"
+            rows="2"
+            placeholder="Type your question in any language… (e.g. UPI से पैसे कैसे भेजें?)"
+            maxlength="1000"
+          ></textarea>
+          <div class="char-count"><span id="charCount">0</span>/1000</div>
+        </div>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send ➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    FinSaathi — AI Agent for Digital Financial Literacy &nbsp;|&nbsp;
+    Powered by <a href="https://www.ibm.com/watsonx" target="_blank">IBM Granite / watsonx.ai</a> &nbsp;|&nbsp;
+    Built with IBM Cloud Lite Services &nbsp;|&nbsp;
+    Sources: RBI · NPCI · SEBI · MeitY · IRDAI
+  </footer>
+</div>
+
+<script>
+  // ── State ─────────────────────────────────────────────────────────────────
+  const API_BASE = '';  // same-origin, no prefix needed
+  let conversationHistory = [];
+  let isLoading = false;
+
+  // ── DOM refs ───────────────────────────────────────────────────────────────
+  const messagesEl    = document.getElementById('messages');
+  const inputEl       = document.getElementById('userInput');
+  const sendBtn       = document.getElementById('sendBtn');
+  const langSelect    = document.getElementById('langSelect');
+  const catSelect     = document.getElementById('catSelect');
+  const charCountEl   = document.getElementById('charCount');
+  const sourceListEl  = document.getElementById('sourceList');
+  const topicBtnsEl   = document.getElementById('topicButtons');
+  const welcomeCard   = document.getElementById('welcomeCard');
+
+  // ── Initialise: load topics ────────────────────────────────────────────────
+  async function loadTopics() {
+    try {
+      const res = await fetch(`${API_BASE}/topics`);
+      if (!res.ok) return;
+      const data = await res.json();
+      topicBtnsEl.innerHTML = '';
+      data.topics.forEach(t => {
+        const btn = document.createElement('button');
+        btn.className = 'topic-btn';
+        btn.textContent = t.label;
+        btn.onclick = () => {
+          catSelect.value = t.id;
+          askQuickQuestion(t.sample_query);
+        };
+        topicBtnsEl.appendChild(btn);
+      });
+    } catch (e) {
+      topicBtnsEl.innerHTML = '<div style="font-size:12px;color:#a8a8a8">Could not load topics.</div>';
+    }
+  }
+
+  // ── Input handlers ─────────────────────────────────────────────────────────
+  inputEl.addEventListener('input', () => {
+    charCountEl.textContent = inputEl.value.length;
+    autoResize(inputEl);
+  });
+
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+  }
+
+  // ── Send message ───────────────────────────────────────────────────────────
+  async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text || isLoading) return;
+
+    hideWelcome();
+    appendMessage('user', text);
+    conversationHistory.push({ role: 'user', content: text });
+
+    inputEl.value = '';
+    charCountEl.textContent = '0';
+    inputEl.style.height = 'auto';
+
+    const loadingId = appendLoading();
+    setLoading(true);
+
+    try {
+      const payload = {
+        message: text,
+        history: conversationHistory.slice(-12),  // last 6 exchanges
+        language: langSelect.value || null,
+        category: catSelect.value || null,
+      };
+
+      const res = await fetch(`${API_BASE}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      removeLoading(loadingId);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+        appendMessage('bot', `⚠️ Error: ${err.detail || 'Something went wrong.'}`, true);
+        return;
+      }
+
+      const data = await res.json();
+      appendMessage('bot', data.answer, false, data.detected_language);
+      conversationHistory.push({ role: 'assistant', content: data.answer });
+      updateSources(data.sources);
+
+    } catch (e) {
+      removeLoading(loadingId);
+      appendMessage('bot', `⚠️ Network error: Could not connect to the server. Is it running?`, true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function askQuickQuestion(q) {
+    inputEl.value = q;
+    charCountEl.textContent = q.length;
+    autoResize(inputEl);
+    sendMessage();
+  }
+
+  // ── Message rendering ──────────────────────────────────────────────────────
+  function hideWelcome() {
+    if (welcomeCard) welcomeCard.style.display = 'none';
+  }
+
+  function appendMessage(role, text, isError = false, detectedLang = null) {
+    const row = document.createElement('div');
+    row.className = `message-row ${role}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = `avatar ${role === 'user' ? 'user' : 'bot'}`;
+    avatar.textContent = role === 'user' ? '👤' : '🤖';
+
+    const bubble = document.createElement('div');
+    bubble.className = `bubble ${role === 'user' ? 'user' : 'bot'}${isError ? ' error' : ''}`;
+    bubble.innerHTML = formatMessage(text);
+
+    if (detectedLang && detectedLang !== 'en' && role === 'bot') {
+      const tag = document.createElement('div');
+      tag.className = 'lang-tag';
+      tag.textContent = `🌐 Detected: ${detectedLang.toUpperCase()}`;
+      bubble.appendChild(tag);
+    }
+
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    messagesEl.appendChild(row);
+    scrollToBottom();
+    return row;
+  }
+
+  function formatMessage(text) {
+    // Basic markdown-like formatting
+    return text
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`(.*?)`/g, '<code style="background:#f4f4f4;padding:1px 4px;border-radius:3px;font-family:monospace">$1</code>')
+      .replace(/\n/g, '<br>');
+  }
+
+  let loadingCounter = 0;
+  function appendLoading() {
+    const id = 'loading-' + (++loadingCounter);
+    const row = document.createElement('div');
+    row.className = 'message-row';
+    row.id = id;
+    row.innerHTML = `
+      <div class="avatar bot">🤖</div>
+      <div class="bubble bot">
+        <div class="loading-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>`;
+    messagesEl.appendChild(row);
+    scrollToBottom();
+    return id;
+  }
+
+  function removeLoading(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  }
+
+  function setLoading(state) {
+    isLoading = state;
+    sendBtn.disabled = state;
+    sendBtn.textContent = state ? '…' : 'Send ➤';
+  }
+
+  function scrollToBottom() {
+    messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' });
+  }
+
+  // ── Sources panel ──────────────────────────────────────────────────────────
+  function updateSources(sources) {
+    if (!sources || sources.length === 0) {
+      sourceListEl.innerHTML = '<div style="font-size:12px;color:#a8a8a8">No specific sources retrieved.</div>';
+      return;
+    }
+    sourceListEl.innerHTML = sources.map(s => `
+      <div class="source-item">
+        <strong>${escHtml(s.title)}</strong>
+        ${escHtml(s.source)}
+      </div>`).join('');
+  }
+
+  function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── Clear conversation ─────────────────────────────────────────────────────
+  function clearChat() {
+    conversationHistory = [];
+    messagesEl.innerHTML = '';
+    // Re-show welcome card
+    const wc = document.createElement('div');
+    wc.id = 'welcomeCard';
+    wc.className = 'welcome-card';
+    wc.innerHTML = `
+      <div class="welcome-icon">🤝</div>
+      <h2>Namaste! I'm FinSaathi</h2>
+      <p>Your AI-powered Digital Financial Literacy assistant, powered by <strong>IBM Granite</strong>.<br>
+      Ask me anything about UPI payments, avoiding scams, interest rates, budgeting, and more.</p>
+      <div class="welcome-chips">
+        <button class="welcome-chip" onclick="askQuickQuestion('How do I send money via UPI?')">Send money via UPI</button>
+        <button class="welcome-chip" onclick="askQuickQuestion('What are common UPI scams?')">Avoid UPI scams</button>
+        <button class="welcome-chip" onclick="askQuickQuestion('What is a safe interest rate for a loan?')">Safe interest rates</button>
+        <button class="welcome-chip" onclick="askQuickQuestion('How do I make a monthly budget?')">Create a budget</button>
+      </div>`;
+    messagesEl.appendChild(wc);
+    sourceListEl.innerHTML = '<div style="font-size:12px;color:#a8a8a8">Sources will appear after your first question.</div>';
+  }
+
+  // ── Boot ───────────────────────────────────────────────────────────────────
+  loadTopics();
+  inputEl.focus();
+</script>
+</body>
+</html>
