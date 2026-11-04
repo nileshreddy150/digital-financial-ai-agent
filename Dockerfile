@@ -21,5 +21,5 @@ RUN mkdir -p data/vectorstore data/documents
 # Expose port
 EXPOSE 8000
 
-# Run the ingestion script then start the server
-CMD python scripts/ingest.py && uvicorn main:app --host 0.0.0.0 --port 8000
+# Start the server (vectorstore is auto-ingested on first startup)
+CMD uvicorn main:app --host 0.0.0.0 --port 8000
