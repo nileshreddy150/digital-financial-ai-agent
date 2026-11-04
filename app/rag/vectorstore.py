@@ -16,7 +16,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 
 from app.core.config import settings
-from app.rag.embeddings import get_embedding_model
+from app.rag.embeddings import get_embedding_model  # returns FastEmbedEmbeddings
 from app.rag.knowledge_base import FINANCIAL_DOCUMENTS
 
 logger = logging.getLogger("digital_finance_agent.vectorstore")

@@ -1,8 +1,8 @@
 """
 app/rag/embeddings.py
 ──────────────────────
-Singleton embedding model using sentence-transformers (multilingual).
-No API key required — runs locally.
+Singleton embedding model using fastembed (ONNX-based, no PyTorch).
+Runs on ~150MB RAM — suitable for free-tier cloud deployments.
 """
 
 from __future__ import annotations
@@ -11,22 +11,19 @@ import logging
 from functools import lru_cache
 from typing import List
 
-from langchain_huggingface import HuggingFaceEmbeddings
-
-from app.core.config import settings
+from langchain_community.embeddings import FastEmbedEmbeddings
 
 logger = logging.getLogger("digital_finance_agent.embeddings")
 
+# Multilingual model that fits in 512MB RAM (ONNX, no torch)
+_FASTEMBED_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+
 
 @lru_cache(maxsize=1)
-def get_embedding_model() -> HuggingFaceEmbeddings:
-    """Return the cached multilingual sentence-transformer embeddings model."""
-    logger.info("Loading embedding model: %s", settings.embedding_model)
-    model = HuggingFaceEmbeddings(
-        model_name=settings.embedding_model,
-        model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True},
-    )
+def get_embedding_model() -> FastEmbedEmbeddings:
+    """Return the cached multilingual fastembed embeddings model."""
+    logger.info("Loading embedding model (fastembed): %s", _FASTEMBED_MODEL)
+    model = FastEmbedEmbeddings(model_name=_FASTEMBED_MODEL)
     logger.info("Embedding model loaded successfully.")
     return model
 
