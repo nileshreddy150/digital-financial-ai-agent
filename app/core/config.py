@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     )
     ibm_watsonx_project_id: str = Field(..., description="watsonx.ai project ID")
     ibm_granite_model_id: str = Field(
-        "ibm/granite-13b-instruct-v2", description="Granite model ID"
+        "ibm/granite-4-h-small", description="Granite model ID"
     )
 
     # ── IBM Watson Language Translator ──────────────────────────────
@@ -49,14 +49,16 @@ class Settings(BaseSettings):
     top_k_results: int = 5
 
     # ── LLM Generation ──────────────────────────────────────────────
-    llm_max_new_tokens: int = 512
+    llm_max_new_tokens: int = 1024
     llm_temperature: float = 0.3
     llm_top_p: float = 0.9
     llm_repetition_penalty: float = 1.1
 
     # ── Embeddings ──────────────────────────────────────────────────
-    embedding_model: str = (
-        "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    # ibm/granite-embedding-278m-multilingual is confirmed available on the
+    # watsonx.ai Lite tier and supports all 11 Indian languages in this agent.
+    ibm_watsonx_embedding_model_id: str = (
+        "ibm/granite-embedding-278m-multilingual"
     )
 
     # ── Language support ────────────────────────────────────────────
