@@ -1,0 +1,16 @@
+{
+  "name": "FinSaathi",
+  "description": "Multilingual RAG agent for digital financial literacy, powered by IBM Granite on watsonx.ai.",
+  "repository": "https://github.com/nileshreddy150/digital-financial-ai-agent",
+  "keywords": ["rag", "ibm-granite", "watsonx", "fastapi", "fintech", "financial-literacy"],
+  "buildpacks": [{ "url": "heroku/python" }],
+  "env": {
+    "IBM_WATSONX_API_KEY": { "description": "IBM Cloud API key", "required": true },
+    "IBM_WATSONX_URL": { "description": "watsonx.ai endpoint", "value": "https://us-south.ml.cloud.ibm.com" },
+    "IBM_WATSONX_PROJECT_ID": { "description": "watsonx.ai project ID", "required": true },
+    "IBM_GRANITE_MODEL_ID": { "description": "Granite model", "value": "ibm/granite-4-h-small" },
+    "IBM_WATSONX_EMBEDDING_MODEL_ID": { "description": "Granite embedding model", "value": "ibm/granite-embedding-278m-multilingual" },
+    "IBM_TRANSLATOR_API_KEY": { "description": "Watson Language Translator key (optional)", "required": false },
+    "IBM_TRANSLATOR_URL": { "description": "Watson Language Translator URL (optional)", "required": false }
+  }
+}
