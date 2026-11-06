@@ -48,10 +48,10 @@ Supports **11 Indian languages + more**: English, Hindi, Tamil, Telugu, Bengali,
 │       ▼               ▼                    ▼                     │
 │  ┌─────────┐   ┌────────────┐    ┌──────────────────┐           │
 │  │  i18n   │   │  RAG       │    │  IBM Granite LLM │           │
-│  │Translator│   │ Pipeline   │    │  (watsonx.ai)    │           │
-│  │         │   │            │    │                  │           │
-│  │ IBM WT  │   │ ChromaDB   │    │ granite-13b-     │           │
-│  │ Google  │   │ Vector     │    │ instruct-v2      │           │
+│  │Translator│   │ Pipeline   │    │  (watsonx.ai)   │           │
+│  │         │   │            │    │                  │        │
+│  │ IBM WT  │   │ ChromaDB   │    │ granite-4-       |           │
+│  │ Google  │   │ Vector     │    │   h-small        │
 │  │ Fallback│   │ Store      │    │                  │           │
 │  └─────────┘   └────────────┘    └──────────────────┘           │
 │                       │                                          │
@@ -69,7 +69,7 @@ Supports **11 Indian languages + more**: English, Hindi, Tamil, Telugu, Bengali,
 
 | Component | Technology | Purpose |
 |---|---|---|
-| **LLM** | IBM Granite 13B Instruct v2 | Answer generation |
+| **LLM** | ibm granite-4-h-small | Answer generation |
 | **RAG Retriever** | ChromaDB + sentence-transformers | Semantic search |
 | **Embeddings** | paraphrase-multilingual-MiniLM-L12-v2 | Multilingual vectors |
 | **Translation** | IBM Watson Translator / deep-translator | Multilingual I/O |
@@ -117,7 +117,7 @@ Edit `.env`:
 IBM_WATSONX_API_KEY=your_actual_ibm_cloud_api_key
 IBM_WATSONX_URL=https://us-south.ml.cloud.ibm.com
 IBM_WATSONX_PROJECT_ID=your_watsonx_project_id
-IBM_GRANITE_MODEL_ID=ibm/granite-13b-instruct-v2
+IBM_GRANITE_MODEL_ID=ibm/granite-4-h-small
 ```
 
 > **Where to get credentials:**
@@ -306,7 +306,7 @@ User asks in Hindi: "UPI से पैसे कैसे भेजें?"
 
 | Category | Technology |
 |---|---|
-| **LLM** | IBM Granite 13B Instruct v2 (watsonx.ai) |
+| **LLM** | ibm/granite-4-h-small (watsonx.ai) |
 | **Cloud** | IBM Cloud Lite |
 | **RAG Framework** | LangChain 0.2 |
 | **Vector Store** | ChromaDB |
